@@ -3,8 +3,16 @@
 
 export const TODAY = "2026-11-02";
 export const TODAY_COMPACT = TODAY.replaceAll("-", "");
-/** 시드 활동의 "n분 전"을 계산하는 데모 기준 시각. 시드 주문은 모두 이 시각 이전입니다. */
+/** 페이지를 연 순간의 데모 시각. 시드 데이터는 모두 이 시각 이전입니다. */
 export const DEMO_NOW = "17:30";
+
+/**
+ * 데모 시계(ms): 페이지를 연 뒤 실제로 흐른 시간만큼 기준 시각에서 나아갑니다.
+ * 시간대의 영향을 받지 않도록 UTC 칸에 담아 두니, 꺼내 쓸 때도 UTC로 읽어야 합니다.
+ */
+export const demoNow = () => Date.parse(`${TODAY}T${DEMO_NOW}:00Z`) + performance.now();
+/** 데모 시계를 주문·재고 기록의 "YYYY-MM-DDTHH:mm" 형식으로 */
+export const demoAt = () => new Date(demoNow()).toISOString().slice(0, 16);
 
 export const CATEGORIES = ["전자기기", "사무용품", "가구", "케이블"] as const;
 export type Category = (typeof CATEGORIES)[number];

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState } from "react";
-import { DEMO_NOW, ITEMS, ORDERS, STOCK_LOGS, TODAY, type Item, type Order, type OrderLine, type OrderStatus, type StockLog, type StockReason } from "./admin-data";
+import { DEMO_NOW, ITEMS, ORDERS, STOCK_LOGS, TODAY, demoAt, demoNow, type Item, type Order, type OrderLine, type OrderStatus, type StockLog, type StockReason } from "./admin-data";
 import { crossedBelow, shortages, stockAfter } from "./admin-logic";
 import { BOT, ME, STOCK_CHANNEL, lowStockText } from "./data";
 
@@ -54,13 +54,6 @@ const SEED_ACTIVITIES: Activity[] = (() => {
 
 type StockChange = { sku: string; after: number; reason: StockReason; memo: string };
 
-/** 기준 날짜는 고정이고, 시각만 지금 시계를 씁니다. 버튼을 누를 때만 불러서 하이드레이션과 무관합니다. */
-function clock() {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${TODAY}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 /**
  * 재고·주문·권한 상태. 모든 화면이 같은 값을 읽어서 바꾸면 바로 반영됩니다.
  *
@@ -87,19 +80,19 @@ export function useAdminState(onLowStock: (items: Item[]) => void) {
 
   // 최신이 맨 앞. 팀 소식 위젯은 앞에서부터 잘라 보여 줍니다.
   function record(entries: Omit<Activity, "id" | "stamp">[]) {
-    const stamp = Date.now();
+    const stamp = demoNow();
     setActivities((list) => [...entries.map((e) => ({ ...e, id: `act-${++seq.current}`, stamp })), ...list]);
   }
 
   // 재고가 바뀌는 길은 여기 하나뿐이라, 조정이든 출고든 알림과 기록이 똑같이 남습니다.
   function applyStock(changes: StockChange[]) {
-    const at = clock();
+    const at = demoAt();
     const newLogs: StockLog[] = [];
     const low: Item[] = [];
     const next = items.map((item) => {
       const change = changes.find((c) => c.sku === item.sku);
       if (!change) return item;
-      const updated = { ...item, stock: change.after, lastInbound: change.reason === "입고" ? TODAY : item.lastInbound };
+      const updated = { ...item, stock: change.after, lastInbound: change.reason === "입고" ? at.slice(0, 10) : item.lastInbound };
       newLogs.push({ id: `log-${++seq.current}`, sku: item.sku, at, by: ME, reason: change.reason, before: item.stock, after: change.after, memo: change.memo });
       if (crossedBelow(item.stock, change.after, item.safety)) low.push(updated);
       return updated;
@@ -163,11 +156,14 @@ export function useAdminState(onLowStock: (items: Item[]) => void) {
     });
     if (!lines.length || shortages(lines, items).length) return false;
 
-    const stamp = TODAY.slice(2).replaceAll("-", "");
-    const count = orders.filter((o) => o.at.startsWith(TODAY)).length + 1;
+    // 데모를 켜 둔 채 자정을 넘겨도 날짜와 번호가 어긋나지 않게 데모 시계의 날짜를 씁니다.
+    const at = demoAt();
+    const date = at.slice(0, 10);
+    const dayStamp = date.slice(2).replaceAll("-", "");
+    const count = orders.filter((o) => o.at.startsWith(date)).length + 1;
     const order: Order = {
-      id: `ORD-${stamp}-${String(count).padStart(2, "0")}`,
-      at: clock(),
+      id: `ORD-${dayStamp}-${String(count).padStart(2, "0")}`,
+      at,
       customer: draft.customer,
       lines,
       amount: lines.reduce((sum, l) => sum + l.qty * l.price, 0),

@@ -1,8 +1,9 @@
+import { demoNow } from "./admin-data";
 import type { FileKind } from "./data";
 
-/** 지금 시각을 "오후 3:05" 형태로 */
+/** 데모 시계의 지금 시각을 "오후 3:05" 형태로 */
 export function nowLabel() {
-  return new Date().toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
+  return new Date(demoNow()).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
 }
 
 /** 목록에 보여줄 짧은 시간: "어제 오후 5:40" → "어제" */

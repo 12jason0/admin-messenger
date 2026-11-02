@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, CalendarDays, PackageX, TrendingUp, Truck, type LucideIcon } from "lucide-react";
-import { CATEGORIES, ITEMS, TODAY, addDays, type Category } from "@/lib/admin-data";
+import { CATEGORIES, ITEMS, TODAY, addDays, demoNow, type Category } from "@/lib/admin-data";
 import { comma, isLow, orderSummary, revenue, shortAt, stockStatus, won } from "@/lib/admin-logic";
 import { LOW_FILTER, WAITING_FILTER, useAdmin, type Activity } from "@/lib/admin-store";
 import { STOCK_CHANNEL, WORKSPACE, type Person } from "@/lib/data";
@@ -423,7 +423,7 @@ function TeamFeed({ people }: { people: Record<string, Person> }) {
   const [now, setNow] = useState(0); // 시각은 화면이 뜬 뒤에 읽습니다 (미리 렌더링할 때 값이 고정되지 않도록)
 
   useEffect(() => {
-    const tick = () => setNow(Date.now());
+    const tick = () => setNow(demoNow());
     const first = window.setTimeout(tick, 0);
     const id = window.setInterval(tick, 30_000);
     return () => {
