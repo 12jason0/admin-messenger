@@ -3,6 +3,8 @@
 
 export const TODAY = "2026-11-02";
 export const TODAY_COMPACT = TODAY.replaceAll("-", "");
+/** 시드 활동의 "n분 전"을 계산하는 데모 기준 시각. 시드 주문은 모두 이 시각 이전입니다. */
+export const DEMO_NOW = "17:30";
 
 export const CATEGORIES = ["전자기기", "사무용품", "가구", "케이블"] as const;
 export type Category = (typeof CATEGORIES)[number];

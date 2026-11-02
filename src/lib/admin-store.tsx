@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState } from "react";
-import { ITEMS, ORDERS, STOCK_LOGS, TODAY, type Item, type Order, type OrderLine, type OrderStatus, type StockLog, type StockReason } from "./admin-data";
+import { DEMO_NOW, ITEMS, ORDERS, STOCK_LOGS, TODAY, type Item, type Order, type OrderLine, type OrderStatus, type StockLog, type StockReason } from "./admin-data";
 import { crossedBelow, shortages, stockAfter } from "./admin-logic";
 import { BOT, ME, STOCK_CHANNEL, lowStockText } from "./data";
 
@@ -18,10 +18,22 @@ export const LOW_FILTER = "filter:low";
 
 const orderVerb = (o: Pick<Order, "id" | "status">) => `주문 ${o.id} ${o.status === "접수" ? "등록" : o.status}`;
 
+const minutesOf = (at: string) => {
+  const [h, m] = at.slice(-5).split(":").map(Number);
+  return h * 60 + m;
+};
+
 // 처음 화면을 채우는 활동. 실제 주문 데이터에서 만들어서, 눌렀을 때 그 주문으로 찾아갈 수 있습니다.
+// 주문 활동은 "주문 몇 분 뒤"로 적어서 주문 시각보다 앞설 수 없습니다. 목록은 최신순입니다.
 const SEED_ACTIVITIES: Activity[] = (() => {
   const today = ORDERS.filter((o) => o.at.startsWith(TODAY)).reverse();
-  const entry = (i: number, ago: string): Activity => ({ id: `seed-o${i}`, actorId: today[i].assigneeId, text: orderVerb(today[i]), ago, orderId: today[i].id });
+  const entry = (i: number, after: number): Activity => ({
+    id: `seed-o${i}`,
+    actorId: today[i].assigneeId,
+    text: orderVerb(today[i]),
+    ago: `${minutesOf(DEMO_NOW) - minutesOf(today[i].at) - after}분 전`,
+    orderId: today[i].id,
+  });
   const bot = (sku: string, name: string, stock: number, safety: number): Activity => ({
     id: `seed-${sku}`,
     actorId: BOT,
@@ -30,13 +42,13 @@ const SEED_ACTIVITIES: Activity[] = (() => {
     channelId: STOCK_CHANNEL,
   });
   return [
-    entry(0, "5분 전"),
+    entry(0, 3),
     { id: "seed-a1", actorId: "doyun", text: "랜 케이블 CAT6 5m 재고 조정 · 입고 30개", ago: "12분 전", sku: "SKU-1036" },
-    entry(1, "26분 전"),
+    entry(1, 6),
+    entry(2, 5),
+    entry(3, 2),
     bot("SKU-1035", "USB-C 충전 케이블 1m", 3, 30),
     bot("SKU-1031", "복합기 토너 검정", 6, 12),
-    entry(2, "2시간 전"),
-    entry(3, "3시간 전"),
   ];
 })();
 

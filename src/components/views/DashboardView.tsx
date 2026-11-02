@@ -44,7 +44,6 @@ export default function DashboardView({ people }: { people: Record<string, Perso
       // 날마다의 "그날까지 30일 합계"라서, 오늘 매출 추이선과 다른 흐름을 보여 줍니다.
       monthSpark: Array.from({ length: 14 }, (_, i) => sum(13 - i, 30)),
       waiting: orders.filter((o) => o.status === "출고대기").length,
-      received: orders.filter((o) => o.status === "접수" && o.at.startsWith(TODAY)).length,
       late: orders.filter((o) => o.status === "출고대기" && o.at.slice(0, 10) <= addDays(TODAY, -2)).length,
     };
   }, [orders, daily]);
@@ -77,7 +76,7 @@ export default function DashboardView({ people }: { people: Record<string, Perso
     return [...sold.values()].sort((a, b) => b.qty - a.qty).slice(0, 5);
   }, [orders]);
 
-  const recent = useMemo(() => [...orders].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 5), [orders]);
+  const recent = useMemo(() => [...orders].sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id)).slice(0, 5), [orders]);
   const low = useMemo(() => items.filter(isLow).sort((a, b) => a.stock / a.safety - b.stock / b.safety), [items]);
   const soldOut = low.filter((i) => i.stock === 0).length;
 
@@ -92,7 +91,7 @@ export default function DashboardView({ people }: { people: Record<string, Perso
         <Kpi icon={TrendingUp} label="최근 30일 매출" onOpen={() => openOrder("")} spark={stats.monthSpark} change={stats.monthChange} changeLabel="직전 30일 대비">
           <Money value={stats.month} />
         </Kpi>
-        <Kpi icon={Truck} label="출고 대기 주문" onOpen={() => openOrder(WAITING_FILTER)} detail={`오늘 접수 ${stats.received} · 2일 이상 지연 ${stats.late}`}>
+        <Kpi icon={Truck} label="출고 대기 주문" onOpen={() => openOrder(WAITING_FILTER)} detail={`그중 2일 이상 지연 ${stats.late}건`}>
           <span className="tabular-nums">{stats.waiting}건</span>
         </Kpi>
         <Kpi icon={PackageX} label="재고 부족 품목" onOpen={() => openItem(LOW_FILTER)} detail={`품절 ${soldOut} · 부족 ${low.length - soldOut}`}>

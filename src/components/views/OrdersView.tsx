@@ -39,7 +39,7 @@ export default function OrdersView({ people, focusId }: { people: Record<string,
         (!q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q)),
     );
     const sign = activeSort.desc ? -1 : 1;
-    return found.sort((a, b) => sign * (activeSort.key === "at" ? a.at.localeCompare(b.at) : a.amount - b.amount));
+    return found.sort((a, b) => sign * (activeSort.key === "at" ? a.at.localeCompare(b.at) : a.amount - b.amount) || b.id.localeCompare(a.id));
   }, [orders, query, status, period, activeSort.key, activeSort.desc]);
 
   const pages = pageCount(list.length, PAGE_SIZE);

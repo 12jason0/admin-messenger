@@ -1,12 +1,13 @@
 // 재고·입력·CSV 규칙 검사. 실행: npm run check:admin
 import assert from "node:assert/strict";
-import { ITEMS, ORDERS, TODAY, addDays } from "../src/lib/admin-data.ts";
+import { DEMO_NOW, ITEMS, ORDERS, TODAY, addDays } from "../src/lib/admin-data.ts";
 import { commaInput, crossedBelow, orderSummary, parseWhole, shortages, stockAfter, stockStatus, toCsv, won } from "../src/lib/admin-logic.ts";
 
 assert.equal(ITEMS.length, 40);
 assert.ok(ORDERS.length >= 270 && ORDERS.length <= 330, `주문 ${ORDERS.length}건`);
 assert.ok(ORDERS.every((o) => o.at.slice(0, 10) >= addDays(TODAY, -89) && o.at.slice(0, 10) <= TODAY));
 assert.equal(new Set(ORDERS.map((o) => o.id)).size, ORDERS.length);
+assert.ok(ORDERS.every((o) => o.at <= `${TODAY}T${DEMO_NOW}`), "시드 주문은 데모 기준 시각 이전");
 assert.equal(ITEMS.find((i) => i.sku === "SKU-1023").name, "무선 마우스");
 assert.equal(ITEMS.filter((i) => i.stock < i.safety).length, 6);
 
