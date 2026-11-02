@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-pretendard), "Pretendard", ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --color-ink: #f6f3ef;
+  --color-accent: #2f6fed;
+  --color-accent-hi: #6aa6ff;
+  --color-good: #43d38a;
+  --color-warn: #f5b84a;
+  --color-bad: #ff7b8a;
+  --color-alert: #d93a44;
+}
+
+/*
+  유리 재질 설정: 이 숫자만 바꾸면 앱 전체 느낌이 바뀝니다.
+  - blur, saturate: 뒤가 얼마나 흐려지고 색이 진해지는지
+  - alpha: 어두운 색 깔림의 진하기 (높을수록 글자가 잘 읽힘, strong은 대화창)
+  - frost: 흰 서리 층. hi는 왼쪽 위, lo는 오른쪽 아래
+  - rim: 테두리 빛. hi는 위·왼쪽, lo는 아래·오른쪽
+  - sheen: 패널 안쪽 윗부분의 빛 반사
+  - noise: 서리 질감. 아래 주소 끝의 opacity 숫자가 세기(0.03~0.05)
+  - surface: 패널 안의 얇은 유리 칸
+  - scrim: 배경 사진 위 어두운 막. top/bottom은 위아래, 전체 막은 day/night
+*/
+:root {
+  --glass-blur: 40px;
+  --glass-saturate: 180%;
+  --glass-tint: 22 20 26;
+  --glass-alpha: 0.22;
+  --glass-alpha-strong: 0.34;
+  --glass-frost-hi: 0.12;
+  --glass-frost-lo: 0.06;
+  --glass-rim-hi: 0.65;
+  --glass-rim-lo: 0.08;
+  --glass-sheen: 0.4;
+  --glass-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  --surface-alpha: 0.1;
+  --surface-rim: 0.22;
+  --scrim-top: 0.3;
+  --scrim-bottom: 0.4;
+  --scrim-day: 0.5;
+  --scrim-night: 0.7;
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #1b1714;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  /* 기본 유리 패널 */
+  .glass {
+    position: relative;
+    /* 노이즈와 서리를 배경 층에 넣어서 스크롤되는 패널에서도 제자리에 있습니다. */
+    background:
+      var(--glass-noise),
+      linear-gradient(135deg, rgb(255 255 255 / var(--glass-frost-hi)), rgb(255 255 255 / var(--glass-frost-lo))),
+      rgb(var(--glass-tint) / var(--glass-alpha));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-rim-hi)),
+      inset 1px 0 0 rgb(255 255 255 / var(--glass-rim-hi)),
+      inset 0 -1px 0 rgb(255 255 255 / var(--glass-rim-lo)),
+      inset -1px 0 0 rgb(255 255 255 / var(--glass-rim-lo)),
+      inset 0 12px 14px -12px rgb(255 255 255 / var(--glass-sheen)),
+      0 40px 80px -30px rgb(0 0 0 / 0.5),
+      0 4px 20px rgb(0 0 0 / 0.1);
+  }
+
+  /* 글을 오래 읽는 곳(대화창)은 더 진하게 */
+  .glass-strong {
+    --glass-alpha: var(--glass-alpha-strong);
+  }
+
+  /* 유리 안쪽의 칸(목록 항목, 입력창 등): 블러 없는 얇은 유리, 위쪽만 밝은 테두리 */
+  .surface {
+    background: rgb(255 255 255 / var(--surface-alpha));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / var(--surface-rim));
+  }
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-accent-hi);
+    outline-offset: 2px;
+  }
+}
+
+/* 입력 중 표시 점 세 개 */
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+.typing-dot {
+  animation: typing 1.2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 알림에서 찾아온 재고 행 강조 */
+.row-focus {
+  background: rgb(106 166 255 / 0.22);
+  box-shadow: inset 0 0 0 1px rgb(106 166 255 / 0.8);
+}
